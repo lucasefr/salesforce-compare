@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "salesforce-compare",
   "displayName": "Salesforce Compare",
   "description": "Compare local Salesforce source files with the connected Org (retrieve-only). Shows sync status on tabs and Git-style diffs.",
@@ -180,3 +180,4 @@
     "typescript": "^5.6.0"
   }
 }
+

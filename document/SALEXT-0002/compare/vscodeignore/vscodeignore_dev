@@ -1,4 +1,4 @@
-.vscode/**
+﻿.vscode/**
 .vscode-test/**
 src/**
 node_modules/**
@@ -16,3 +16,4 @@ document/**
 .env
 .env.example
 scripts/**
+

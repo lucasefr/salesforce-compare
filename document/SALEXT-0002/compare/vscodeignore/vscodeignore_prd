@@ -1,4 +1,4 @@
-.vscode/**
+﻿.vscode/**
 .vscode-test/**
 src/**
 node_modules/**
@@ -13,6 +13,3 @@ esbuild.js
 document/**
 **/.cursor/**
 **/*.plan.md
-.env
-.env.example
-scripts/**

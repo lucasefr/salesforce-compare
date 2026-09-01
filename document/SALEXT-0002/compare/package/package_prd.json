@@ -1,10 +1,9 @@
-{
+﻿{
   "name": "salesforce-compare",
   "displayName": "Salesforce Compare",
   "description": "Compare local Salesforce source files with the connected Org (retrieve-only). Shows sync status on tabs and Git-style diffs.",
   "version": "0.1.1",
-  "publisher": "LeftConsult",
-  "icon": "images/icon.png",
+  "publisher": "left-consult",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -169,7 +168,6 @@
     "watch": "node esbuild.js --watch",
     "compile": "tsc -p ./ --noEmit",
     "package": "vsce package --no-dependencies",
-    "publish:marketplace": "powershell -ExecutionPolicy Bypass -File ./scripts/publish-marketplace.ps1",
     "lint": "tsc -p ./ --noEmit"
   },
   "devDependencies": {
