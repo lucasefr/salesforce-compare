@@ -1,0 +1,15 @@
+.vscode/**
+.vscode-test/**
+src/**
+node_modules/**
+.gitignore
+tsconfig.json
+esbuild.js
+**/*.map
+**/*.ts
+!dist/**
+*.vsix
+.salesforce-compare/**
+document/**
+**/.cursor/**
+**/*.plan.md
