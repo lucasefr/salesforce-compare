@@ -1,0 +1,180 @@
+{
+  "name": "salesforce-compare",
+  "displayName": "Salesforce Compare",
+  "description": "Compare local Salesforce source files with the connected Org (retrieve-only). Shows sync status on tabs and Git-style diffs.",
+  "version": "0.1.1",
+  "publisher": "left-consult",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/left-consult/salesforce-compare"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "SCM Providers"
+  ],
+  "keywords": [
+    "salesforce",
+    "sfdx",
+    "sf",
+    "compare",
+    "diff",
+    "org"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/sfdx-project.json"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "salesforceCompare.diffWithOrg",
+        "title": "Diff with Org",
+        "category": "Salesforce Compare"
+      },
+      {
+        "command": "salesforceCompare.recheckFile",
+        "title": "Recheck Current File",
+        "category": "Salesforce Compare"
+      },
+      {
+        "command": "salesforceCompare.showLastCheck",
+        "title": "Show Last Check Info",
+        "category": "Salesforce Compare"
+      },
+      {
+        "command": "salesforceCompare.clearCache",
+        "title": "Clear Cache",
+        "category": "Salesforce Compare"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "salesforceCompare.diffWithOrg",
+          "when": "resourceScheme == file && salesforceCompare.isEligible",
+          "group": "salesforceCompare@1"
+        },
+        {
+          "command": "salesforceCompare.recheckFile",
+          "when": "resourceScheme == file && salesforceCompare.isEligible",
+          "group": "salesforceCompare@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "salesforceCompare.diffWithOrg",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && salesforceCompare.isEligible",
+          "group": "salesforceCompare@1"
+        },
+        {
+          "command": "salesforceCompare.recheckFile",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && salesforceCompare.isEligible",
+          "group": "salesforceCompare@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "salesforceCompare.diffWithOrg",
+          "when": "salesforceCompare.isEligible"
+        },
+        {
+          "command": "salesforceCompare.recheckFile",
+          "when": "salesforceCompare.isEligible"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Salesforce Compare",
+      "properties": {
+        "salesforceCompare.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic Org comparison when opening Salesforce source files."
+        },
+        "salesforceCompare.autoCheckOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically retrieve and compare when a supported file is opened."
+        },
+        "salesforceCompare.targetOrg": {
+          "type": "string",
+          "default": "",
+          "description": "Optional target org alias/username. When empty, uses Salesforce Extension Pack default or sf target-org."
+        },
+        "salesforceCompare.supportedExtensions": {
+          "type": "array",
+          "default": [
+            ".cls",
+            ".trigger",
+            ".js",
+            ".html",
+            ".css",
+            ".xml",
+            ".page",
+            ".component",
+            ".apex",
+            ".soql"
+          ],
+          "description": "File extensions eligible for Org comparison (still filtered by Salesforce path layout)."
+        }
+      }
+    },
+    "colors": [
+      {
+        "id": "salesforceCompare.synced",
+        "description": "Decoration color when local file matches the Org.",
+        "defaults": {
+          "dark": "#3fb950",
+          "light": "#1a7f37",
+          "highContrast": "#3fb950"
+        }
+      },
+      {
+        "id": "salesforceCompare.outdated",
+        "description": "Decoration color when local file differs from the Org.",
+        "defaults": {
+          "dark": "#f85149",
+          "light": "#cf222e",
+          "highContrast": "#f85149"
+        }
+      },
+      {
+        "id": "salesforceCompare.checking",
+        "description": "Decoration color while comparing with the Org.",
+        "defaults": {
+          "dark": "#8b949e",
+          "light": "#6e7781",
+          "highContrast": "#8b949e"
+        }
+      },
+      {
+        "id": "salesforceCompare.error",
+        "description": "Decoration color when comparison failed.",
+        "defaults": {
+          "dark": "#d29922",
+          "light": "#9a6700",
+          "highContrast": "#d29922"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.js --production",
+    "watch": "node esbuild.js --watch",
+    "compile": "tsc -p ./ --noEmit",
+    "package": "vsce package --no-dependencies",
+    "lint": "tsc -p ./ --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  }
+}
