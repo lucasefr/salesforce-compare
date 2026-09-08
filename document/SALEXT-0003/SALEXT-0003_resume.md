@@ -2,7 +2,7 @@
 demand: SALEXT-0003
 project: Salesforce Extensions
 repo: Salesforce Compare
-status: in_progress
+status: done
 started: 2026-09-07
 notion: ""
 jira: ""
@@ -12,8 +12,8 @@ work_days:
     summary: XML metadata eligibility + background compare queue; Equal/Different UI start
     source: etapa
   - date: 2026-09-08
-    minutes: 40
-    summary: Equal/Different toast+status bar; README/CHANGELOG/package docs for v0.1.2 release
+    minutes: 50
+    summary: Equal/Different UI; docs v0.1.2; publish Marketplace LeftConsult.salesforce-compare
     source: etapa
 ---
 
@@ -22,9 +22,11 @@ work_days:
 ## Informações Gerais
 - **Demanda:** SALEXT-0003
 - **Data de Início:** 07/09/2026
-- **Status:** Em andamento (código validado; docs/release notes alinhados para v0.1.2)
+- **Status:** Concluída
 - **Última Atualização:** 08/09/2026
-- **Versão alvo:** `0.1.2`
+- **Versão:** `0.1.2`
+- **Marketplace:** https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare
+- **Hub:** https://marketplace.visualstudio.com/manage/publishers/LeftConsult/extensions/salesforce-compare/hub
 
 ## Objetivo
 Atualizar a extensão Salesforce Compare para: (1) aceitar metadados `.xml`; (2) compares em background sem cancelar ao trocar de arquivo; (3) UI clara Equal/Different; (4) documentar a release.
@@ -75,4 +77,6 @@ Atualizar a extensão Salesforce Compare para: (1) aceitar metadados `.xml`; (2)
 - 08/09/2026 — README / CHANGELOG / package.json para identificar v0.1.2
 
 ## Observações
-Código validado pelo usuário. Publicação no Marketplace (`npm run publish:marketplace`) ainda pendente, se desejada.
+Publicação no Marketplace concluída: **LeftConsult.salesforce-compare v0.1.2**.
+- Marketplace: https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare
+- Hub: https://marketplace.visualstudio.com/manage/publishers/LeftConsult/extensions/salesforce-compare/hub
