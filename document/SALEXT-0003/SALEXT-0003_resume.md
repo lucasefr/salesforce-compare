@@ -25,8 +25,9 @@ work_days:
 - **Status:** Concluída
 - **Última Atualização:** 08/09/2026
 - **Versão:** `0.1.2`
-- **Marketplace:** https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare
+- **Marketplace (VS Code):** https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare
 - **Hub:** https://marketplace.visualstudio.com/manage/publishers/LeftConsult/extensions/salesforce-compare/hub
+- **Open VSX (Cursor):** https://open-vsx.org/extension/LeftConsult/salesforce-compare
 
 ## Objetivo
 Atualizar a extensão Salesforce Compare para: (1) aceitar metadados `.xml`; (2) compares em background sem cancelar ao trocar de arquivo; (3) UI clara Equal/Different; (4) documentar a release.
@@ -78,5 +79,6 @@ Atualizar a extensão Salesforce Compare para: (1) aceitar metadados `.xml`; (2)
 
 ## Observações
 Publicação no Marketplace concluída: **LeftConsult.salesforce-compare v0.1.2**.
-- Marketplace: https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare
+- Marketplace (VS Code): https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare
 - Hub: https://marketplace.visualstudio.com/manage/publishers/LeftConsult/extensions/salesforce-compare/hub
+- Open VSX (Cursor): https://open-vsx.org/extension/LeftConsult/salesforce-compare — publicado via `npm run publish:openvsx`

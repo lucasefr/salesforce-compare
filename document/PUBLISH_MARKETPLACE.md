@@ -87,14 +87,32 @@ Para futuras versões: atualize `version` + `CHANGELOG.md`, depois `npm run publ
 
 ---
 
-## Passo 8 — (Opcional) Open VSX / Cursor (VOCÊ + AGENTE)
+## Passo 8 — Open VSX / Cursor marketplace ✅ (fluxo)
 
-O Marketplace da Microsoft **não** alimenta automaticamente o Open VSX (usado por algumas builds do Cursor).
+O Cursor **não** usa o Visual Studio Marketplace da Microsoft para extensões de terceiros.
+Ele usa o **Open VSX** (com proxy `marketplace.cursorapi.com`).
 
-- Conta / token: https://open-vsx.org/
-- Publicar: `npx ovsx publish` (com token Open VSX)
+### VOCÊ — token Open VSX (uma vez)
 
-Só faça se quiser instalação fácil também fora do VS Code Marketplace.
+1. Entre em https://open-vsx.org/ com GitHub (conta Left Consult / lucasefr).
+2. Acesse https://open-vsx.org/user-settings/tokens → **Generate New Token**.
+3. Cole o valor em `.env` como `OVSX_PAT=` (nunca commitar).
+4. Se a Eclipse pedir, assine o Contributor Agreement.
+
+### AGENTE / republicação
+
+```powershell
+npm run publish:openvsx
+```
+
+Isso cria o namespace `LeftConsult` (se ainda não existir) e publica o `.vsix` no Open VSX.
+
+- Open VSX: https://open-vsx.org/extension/LeftConsult/salesforce-compare
+- No Cursor: Extensions → buscar **Salesforce Compare** → Install (pode levar alguns minutos)
+
+Para publicar nas duas lojas de uma vez: `npm run publish:all`.
+
+Verificação opcional no Cursor (badge verified): https://cursor.com/help/customization/extensions#how-do-i-get-my-extension-verified
 
 ---
 

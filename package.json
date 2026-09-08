@@ -179,6 +179,8 @@
     "compile": "tsc -p ./ --noEmit",
     "package": "vsce package --no-dependencies",
     "publish:marketplace": "powershell -ExecutionPolicy Bypass -File ./scripts/publish-marketplace.ps1",
+    "publish:openvsx": "powershell -ExecutionPolicy Bypass -File ./scripts/publish-openvsx.ps1",
+    "publish:all": "npm run publish:marketplace && npm run publish:openvsx",
     "lint": "tsc -p ./ --noEmit"
   },
   "devDependencies": {

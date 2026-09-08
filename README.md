@@ -4,6 +4,9 @@ VS Code / Cursor extension that compares local Salesforce DX source files with t
 
 **Current version:** `0.1.2` · Publisher: [LeftConsult](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
 
+- **VS Code / Visual Studio Marketplace:** [LeftConsult.salesforce-compare](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
+- **Cursor (Open VSX):** [open-vsx.org/extension/LeftConsult/salesforce-compare](https://open-vsx.org/extension/LeftConsult/salesforce-compare) — after Open VSX publish, search **Salesforce Compare** in Cursor Extensions
+
 ## What's new in 0.1.2
 
 - **Metadata XML** — compare standalone Salesforce `*-meta.xml` files (objects, fields, layouts, flows, permission sets, profiles, flexipages, validation rules, etc.), not only Apex classes/triggers
@@ -42,13 +45,23 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 ## Install
 
-### From Visual Studio Marketplace (recommended)
+### From Visual Studio Marketplace (VS Code)
 
 1. Open **Extensions** in VS Code (`Ctrl+Shift+X`)
 2. Search for **Salesforce Compare**
 3. Click **Install** (or **Update** to get `0.1.2`)
 
 Or install directly: [Salesforce Compare on Marketplace](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
+
+### From Cursor (Open VSX)
+
+Cursor uses the [Open VSX](https://open-vsx.org/) registry (not the Microsoft Marketplace).
+
+1. Open **Extensions** in Cursor (`Ctrl+Shift+X`)
+2. Search for **Salesforce Compare** (publisher `LeftConsult`)
+3. Click **Install**
+
+Listing: [LeftConsult/salesforce-compare on Open VSX](https://open-vsx.org/extension/LeftConsult/salesforce-compare)
 
 ### From VSIX (manual)
 
