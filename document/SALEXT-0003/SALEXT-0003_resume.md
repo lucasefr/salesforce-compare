@@ -4,7 +4,7 @@ project: Salesforce Extensions
 repo: Salesforce Compare
 status: done
 started: 2026-09-07
-notion: ""
+notion: "https://app.notion.com/p/3d5a6e0e45cf81e0a9d4e33b3f79b6fe"
 jira: ""
 work_days:
   - date: 2026-09-07
@@ -13,7 +13,7 @@ work_days:
     source: etapa
   - date: 2026-09-08
     minutes: 50
-    summary: Equal/Different UI; docs v0.1.2; publish Marketplace LeftConsult.salesforce-compare
+    summary: Equal/Different UI; docs v0.1.2; publish Marketplace + Open VSX; Notion card Concluída
     source: etapa
 ---
 
@@ -25,6 +25,8 @@ work_days:
 - **Status:** Concluída
 - **Última Atualização:** 08/09/2026
 - **Versão:** `0.1.2`
+- **Card Notion:** [SALEXT-0003](https://app.notion.com/p/3d5a6e0e45cf81e0a9d4e33b3f79b6fe)
+- **Projeto Notion:** [Salesforce Extensions](https://app.notion.com/p/3cea6e0e45cf81ad80a3cdf9430dacbe)
 - **Marketplace (VS Code):** https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare
 - **Hub:** https://marketplace.visualstudio.com/manage/publishers/LeftConsult/extensions/salesforce-compare/hub
 - **Open VSX (Cursor):** https://open-vsx.org/extension/LeftConsult/salesforce-compare
