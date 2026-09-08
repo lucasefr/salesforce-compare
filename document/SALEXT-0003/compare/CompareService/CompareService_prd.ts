@@ -3,39 +3,15 @@ import { ContentHashUtil } from '../infrastructure/ContentHashUtil';
 import { OrgSnapshotCache } from '../infrastructure/OrgSnapshotCache';
 import { SfCliAdapter } from '../infrastructure/SfCliAdapter';
 import { SalesforcePathMapper } from '../util/SalesforcePathMapper';
-import { FileStatusEntry, FileStatusStore, FileSyncStatus } from './FileStatusStore';
+import { FileStatusStore } from './FileStatusStore';
 import { OrgResolver } from './OrgResolver';
-
-/** Default parallel Org retrieves; keeps CLI stable while allowing overlap. */
-const DEFAULT_MAX_CONCURRENT_COMPARES = 2;
-
-/**
- * Queued compare job. Multiple waiters can share one job for the same URI.
- */
-interface QueuedCompareJob {
-  uri: vscode.Uri;
-  force: boolean;
-  resolvers: Array<() => void>;
-}
 
 /**
  * Orchestrates retrieve → cache → hash → status updates for eligible files.
  * Never performs deploy operations.
- *
- * Compares run on a background queue: opening another file enqueues a new job
- * without cancelling jobs already running or waiting.
  */
 export class CompareService {
-  // SALEXT-0003 - start
-  private readonly queue: QueuedCompareJob[] = [];
-  private readonly queuedByKey = new Map<string, QueuedCompareJob>();
-  private readonly runningByKey = new Map<string, Promise<void>>();
-  private activeWorkers = 0;
-  private readonly _onQueueChanged = new vscode.EventEmitter<void>();
-  /** Fires when the background compare queue depth or running set changes. */
-  public readonly onQueueChanged = this._onQueueChanged.event;
-  // SALEXT-0003 - end
-
+  private readonly inFlight = new Map<string, Promise<void>>();
   private cliMissingNotified = false;
 
   /**
@@ -78,24 +54,12 @@ export class CompareService {
   }
 
   /**
-   * Returns how many compare jobs are waiting or actively retrieving.
-   *
-   * @returns Count of queued + running background compares.
-   */
-  // SALEXT-0003 - start
-  public getBackgroundJobCount(): number {
-    return this.queuedByKey.size + this.runningByKey.size;
-  }
-  // SALEXT-0003 - end
-
-  /**
-   * Enqueues a compare of a local file with the Org version (retrieve + hash).
-   * Does not cancel other files' jobs when a new file is opened or focused.
-   * Concurrent requests for the same URI share one job unless `force` is set.
+   * Compares a local file with the Org version (retrieve + hash).
+   * Concurrent calls for the same URI share the same in-flight promise unless forced.
    *
    * @param uri - Local file URI to compare.
-   * @param options - Optional flags; `force` schedules a fresh compare even if one is running/queued.
-   * @returns Promise that resolves when this URI's status has been updated.
+   * @param options - Optional flags; `force` starts a fresh compare even if one is running.
+   * @returns Promise that resolves when status has been updated.
    */
   public async compareFile(
     uri: vscode.Uri,
@@ -106,49 +70,18 @@ export class CompareService {
     }
 
     const key = SalesforcePathMapper.toCacheKey(uri);
-    const force = options?.force === true;
-
-    // SALEXT-0003 - start
-    if (!force) {
-      const running = this.runningByKey.get(key);
-      if (running) {
-        return running;
-      }
-      const queued = this.queuedByKey.get(key);
-      if (queued) {
-        return new Promise<void>((resolve) => {
-          queued.resolvers.push(resolve);
-        });
-      }
-    } else {
-      const running = this.runningByKey.get(key);
-      if (running) {
-        await running;
-        return this.compareFile(uri, { force: true });
-      }
-      const queued = this.queuedByKey.get(key);
-      if (queued) {
-        queued.force = true;
-        return new Promise<void>((resolve) => {
-          queued.resolvers.push(resolve);
-        });
+    if (!options?.force) {
+      const existing = this.inFlight.get(key);
+      if (existing) {
+        return existing;
       }
     }
 
-    this.store.setStatus(uri, 'checking');
-
-    return new Promise<void>((resolve) => {
-      const job: QueuedCompareJob = {
-        uri,
-        force,
-        resolvers: [resolve],
-      };
-      this.queue.push(job);
-      this.queuedByKey.set(key, job);
-      this.emitQueueChanged();
-      this.pumpQueue();
+    const work = this.runCompare(uri).finally(() => {
+      this.inFlight.delete(key);
     });
-    // SALEXT-0003 - end
+    this.inFlight.set(key, work);
+    return work;
   }
 
   /**
@@ -256,41 +189,6 @@ export class CompareService {
   }
 
   /**
-   * Returns the stored sync status entry for a URI, if any.
-   *
-   * @param uri - File URI.
-   * @returns Status entry or undefined when the file was never compared.
-   */
-  // SALEXT-0003 - start
-  public getFileStatus(uri: vscode.Uri): FileStatusEntry | undefined {
-    return this.store.get(uri);
-  }
-
-  /**
-   * Maps a sync status to a short, user-facing compare result label.
-   *
-   * @param status - Sync status or undefined.
-   * @returns Label such as "Equal to Org" or "Different from Org".
-   */
-  public formatCompareResultLabel(status: FileSyncStatus | undefined): string {
-    switch (status) {
-      case 'synced':
-        return 'Equal to Org';
-      case 'outdated':
-        return 'Different from Org';
-      case 'checking':
-        return 'Comparing with Org…';
-      case 'error':
-        return 'Compare failed';
-      case 'unknown':
-        return 'Status unknown';
-      default:
-        return 'Not compared yet';
-    }
-  }
-  // SALEXT-0003 - end
-
-  /**
    * Formats a human-readable last-check summary for a URI or the global latest.
    *
    * @param uri - Optional file URI; when omitted uses the latest global check.
@@ -300,79 +198,14 @@ export class CompareService {
     const entry = uri ? this.store.get(uri) : undefined;
     const timestamp = entry?.lastCheckedAt ?? this.store.getLatestCheckTimestamp();
     const org = entry?.targetOrg;
-    const background = this.getBackgroundJobCount();
-    const backgroundPart =
-      background > 0 ? ` · Background: ${background} file(s) comparing` : '';
-    // SALEXT-0003 - start
-    const resultLabel = this.formatCompareResultLabel(entry?.status);
-    if (timestamp === undefined && !entry) {
-      return `No Org comparison has been run yet.${backgroundPart}`;
+    if (timestamp === undefined) {
+      return 'No Org comparison has been run yet.';
     }
-    const age =
-      timestamp !== undefined ? this.formatAge(timestamp) : 'n/a';
+    const age = this.formatAge(timestamp);
     const orgPart = org ? ` · Org: ${org}` : '';
-    const detail = entry?.message ? ` — ${entry.message}` : '';
-    return `${resultLabel} · Last check: ${age}${orgPart}${detail}${backgroundPart}`;
-    // SALEXT-0003 - end
+    const statusPart = entry ? ` · Status: ${entry.status}` : '';
+    return `Last check: ${age}${orgPart}${statusPart}`;
   }
-
-  /**
-   * Starts queued compare workers up to the configured concurrency limit.
-   * Never drops or cancels jobs already running or waiting.
-   */
-  // SALEXT-0003 - start
-  private pumpQueue(): void {
-    const maxConcurrent = this.getMaxConcurrentCompares();
-
-    while (this.activeWorkers < maxConcurrent && this.queue.length > 0) {
-      const job = this.queue.shift();
-      if (!job) {
-        break;
-      }
-
-      const key = SalesforcePathMapper.toCacheKey(job.uri);
-      this.queuedByKey.delete(key);
-      this.activeWorkers += 1;
-
-      const work = this.runCompare(job.uri)
-        .catch(() => undefined)
-        .finally(() => {
-          this.runningByKey.delete(key);
-          this.activeWorkers = Math.max(0, this.activeWorkers - 1);
-          for (const resolve of job.resolvers) {
-            resolve();
-          }
-          this.emitQueueChanged();
-          this.pumpQueue();
-        });
-
-      this.runningByKey.set(key, work);
-      this.emitQueueChanged();
-    }
-  }
-
-  /**
-   * Reads the max concurrent compare setting (minimum 1).
-   *
-   * @returns Maximum number of parallel Org retrieves.
-   */
-  private getMaxConcurrentCompares(): number {
-    const configured = vscode.workspace
-      .getConfiguration('salesforceCompare')
-      .get<number>('maxConcurrentCompares', DEFAULT_MAX_CONCURRENT_COMPARES);
-    if (!Number.isFinite(configured) || configured < 1) {
-      return DEFAULT_MAX_CONCURRENT_COMPARES;
-    }
-    return Math.floor(configured);
-  }
-
-  /**
-   * Notifies listeners that queue/running job counts changed.
-   */
-  private emitQueueChanged(): void {
-    this._onQueueChanged.fire();
-  }
-  // SALEXT-0003 - end
 
   /**
    * Reads local file content from the open editor or from disk.

@@ -1,8 +1,8 @@
 {
   "name": "salesforce-compare",
   "displayName": "Salesforce Compare",
-  "description": "Compare local Salesforce DX files (Apex, LWC, metadata XML) with the connected Org. Equal/Different status on tabs and status bar; retrieve-only Git-style diffs.",
-  "version": "0.1.2",
+  "description": "Compare local Salesforce source files with the connected Org (retrieve-only). Shows sync status on tabs and Git-style diffs.",
+  "version": "0.1.1",
   "publisher": "LeftConsult",
   "icon": "images/icon.png",
   "license": "MIT",
@@ -23,10 +23,7 @@
     "sf",
     "compare",
     "diff",
-    "org",
-    "metadata",
-    "xml",
-    "apex"
+    "org"
   ],
   "activationEvents": [
     "workspaceContains:**/sfdx-project.json"
@@ -46,7 +43,7 @@
       },
       {
         "command": "salesforceCompare.showLastCheck",
-        "title": "Show Compare Result",
+        "title": "Show Last Check Info",
         "category": "Salesforce Compare"
       },
       {
@@ -124,12 +121,6 @@
             ".soql"
           ],
           "description": "File extensions eligible for Org comparison (still filtered by Salesforce path layout)."
-        },
-        "salesforceCompare.maxConcurrentCompares": {
-          "type": "number",
-          "default": 2,
-          "minimum": 1,
-          "description": "Maximum number of Org retrieve/compare jobs that run in parallel. Opening another file queues additional jobs without cancelling ones already running."
         }
       }
     },

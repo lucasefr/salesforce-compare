@@ -1,10 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {
-  COMPANION_META_SUFFIXES,
-  DEFAULT_SUPPORTED_EXTENSIONS,
-  SALESFORCE_PATH_MARKERS,
-} from './constants';
+import { DEFAULT_SUPPORTED_EXTENSIONS, SALESFORCE_PATH_MARKERS } from './constants';
 
 /**
  * Maps local Salesforce DX source paths to metadata retrieve hints
@@ -34,13 +30,10 @@ export class SalesforcePathMapper {
       return false;
     }
 
-    // SALEXT-0003 - start
-    // Skip companion -meta.xml files (Apex/LWC/Aura/VF companions).
-    // Accept standalone metadata XML (object, layout, flow, permissionset, etc.).
-    if (this.isCompanionMetaXml(filePath)) {
+    // Skip standalone -meta.xml companions unless they are object meta files.
+    if (filePath.endsWith('-meta.xml') && !filePath.endsWith('.object-meta.xml')) {
       return false;
     }
-    // SALEXT-0003 - end
 
     const normalized = filePath.replace(/\\/g, '/').toLowerCase();
     const hasSalesforceLayout = SALESFORCE_PATH_MARKERS.some((marker) =>
@@ -58,31 +51,6 @@ export class SalesforcePathMapper {
 
     return true;
   }
-
-  /**
-   * Returns whether the path is a companion `-meta.xml` that accompanies a
-   * primary source file (e.g. `MyClass.cls-meta.xml`), as opposed to
-   * standalone Salesforce metadata such as `.object-meta.xml` or `.layout-meta.xml`.
-   *
-   * @param filePath - Absolute or relative file path to evaluate.
-   * @returns True when the file should not be compared independently.
-   */
-  // SALEXT-0003 - start
-  public static isCompanionMetaXml(filePath: string): boolean {
-    const lower = filePath.toLowerCase();
-    if (COMPANION_META_SUFFIXES.some((suffix) => lower.endsWith(suffix))) {
-      return true;
-    }
-
-    // Aura `.app-meta.xml` is a companion; `applications/*.app-meta.xml` is CustomApplication.
-    if (lower.endsWith('.app-meta.xml')) {
-      const normalized = lower.replace(/\\/g, '/');
-      return normalized.includes('/aura/');
-    }
-
-    return false;
-  }
-  // SALEXT-0003 - end
 
   /**
    * Resolves the workspace folder that owns the given file.

@@ -24,31 +24,6 @@ export const DEFAULT_SUPPORTED_EXTENSIONS = [
   '.apex',
 ] as const;
 
-/**
- * Companion `-meta.xml` suffixes that accompany a primary source file
- * (e.g. `MyClass.cls-meta.xml`). These are not standalone metadata and
- * should not be compared independently.
- */
-// SALEXT-0003 - start
-export const COMPANION_META_SUFFIXES = [
-  '.cls-meta.xml',
-  '.trigger-meta.xml',
-  '.js-meta.xml',
-  '.html-meta.xml',
-  '.css-meta.xml',
-  '.page-meta.xml',
-  '.component-meta.xml',
-  '.resource-meta.xml',
-  '.cmp-meta.xml',
-  '.evt-meta.xml',
-  '.intf-meta.xml',
-  '.tokens-meta.xml',
-  '.auradoc-meta.xml',
-  '.design-meta.xml',
-  '.svg-meta.xml',
-] as const;
-// SALEXT-0003 - end
-
 /** Salesforce default package directories used to detect eligible paths. */
 export const SALESFORCE_PATH_MARKERS = [
   '/force-app/',
