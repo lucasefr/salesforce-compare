@@ -2,24 +2,20 @@
 
 VS Code / Cursor extension that compares local Salesforce DX source files with the connected Org (**retrieve-only**). It shows sync status on tabs/explorer and opens a Git-style diff against the Org version.
 
-**Current version:** `0.2.0` · Publisher: [LeftConsult](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
+**Current version:** `1.0.0` · Publisher: [LeftConsult](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
 
 - **VS Code / Visual Studio Marketplace:** [LeftConsult.salesforce-compare](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
 - **Cursor (Open VSX):** [open-vsx.org/extension/LeftConsult/salesforce-compare](https://open-vsx.org/extension/LeftConsult/salesforce-compare) — after Open VSX publish, search **Salesforce Compare** in Cursor Extensions
 
-## What's new in 0.2.0
+## What's new in 1.0.0
 
+- **First stable release** for VS Code Marketplace and Open VSX (Cursor)
 - **Connected Orgs sidebar** — connect extra Orgs for comparison; Original Org is labeled and remains the source of Equal/Different status
 - **Diff with Other Org…** — right-click an eligible file and compare **Local ↔** a selected comparison Org (retrieve-only)
-- **Login…** — opens `sf org login web` in a terminal so you can authenticate another Org, then Connect it
+- **Authorize an Org…** — Production / Sandbox / Custom URL + alias; auto-triggered on auth errors during compare
+- **Metadata XML** — compare standalone Salesforce `*-meta.xml` files (objects, fields, layouts, flows, permission sets, profiles, flexipages, validation rules, etc.)
+- **Background queue** — opening or switching files does not cancel prior compares; each file finishes in the background and updates its own badge
 - Comparison Orgs are stored **per workspace**; the extension never deploys to any Org
-
-## What's new in 0.1.2
-
-- **Metadata XML** — compare standalone Salesforce `*-meta.xml` files (objects, fields, layouts, flows, permission sets, profiles, flexipages, validation rules, etc.), not only Apex classes/triggers
-- **Background queue** — opening or switching files does **not** cancel prior compares; each file finishes in the background and updates its own badge
-- **Clear Equal / Different UI** — status bar shows `SF Equal` / `SF Different` / `SF Comparing…`; Show Last Check toast states the result with color cues and optional Diff / Recheck actions
-- **Setting** `salesforceCompare.maxConcurrentCompares` (default `2`) — how many Org retrieves run in parallel
 
 See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
@@ -57,7 +53,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 1. Open **Extensions** in VS Code (`Ctrl+Shift+X`)
 2. Search for **Salesforce Compare**
-3. Click **Install** (or **Update** to get `0.2.0`)
+3. Click **Install** (or **Update** to get `1.0.0`)
 
 Or install directly: [Salesforce Compare on Marketplace](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
 
@@ -79,7 +75,7 @@ npm run build
 npm run package
 ```
 
-Then in VS Code / Cursor: **Extensions → … → Install from VSIX…** and select the generated `.vsix` (`salesforce-compare-0.2.0.vsix`).
+Then in VS Code / Cursor: **Extensions → … → Install from VSIX…** and select the generated `.vsix` (`salesforce-compare-1.0.0.vsix`).
 
 ## Commands
 
@@ -90,8 +86,8 @@ Then in VS Code / Cursor: **Extensions → … → Install from VSIX…** and se
 | `Salesforce Compare: Recheck Current File` | Force a fresh retrieve/compare against the Original Org |
 | `Salesforce Compare: Show Compare Result` | Show Equal / Different result (toast + Diff/Recheck actions) |
 | `Salesforce Compare: Clear Cache` | Clear Org snapshot cache and statuses |
-| `Salesforce Compare: Connect Org` | Add an authenticated Org as comparison-only |
-| `Salesforce Compare: Login…` | Run `sf org login web` in a terminal |
+| `Salesforce Compare: Authorize an Org…` | Authorize and automatically list the Org in Connected Orgs (Production / Sandbox / Custom URL + alias) |
+| `Salesforce Compare: Disconnect Org` | Remove a comparison Org from this workspace |
 | `Salesforce Compare: Disconnect Org` | Remove a comparison Org from this workspace |
 | `Salesforce Compare: Refresh Connected Orgs` | Refresh the Connected Orgs sidebar |
 

@@ -2,6 +2,13 @@
 
 All notable changes to **Salesforce Compare** are documented here.
 
+## 1.0.0 — 2026-09-11
+
+### Notes
+
+- First stable marketplace release (VS Code Marketplace and Open VSX / Cursor)
+- Includes Multi-Org compare, Connected Orgs sidebar, metadata XML support, and background compare queue from the 0.1.x / 0.2.0 line
+
 ## 0.2.0 — 2026-09-08
 
 ### Added

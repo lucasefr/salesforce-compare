@@ -2,7 +2,7 @@
   "name": "salesforce-compare",
   "displayName": "Salesforce Compare",
   "description": "Compare local Salesforce DX files with the Original Org (Equal/Different status) and optionally Diff with Other Org (Local ↔ comparison Orgs). Retrieve-only.",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "publisher": "LeftConsult",
   "icon": "images/icon.png",
   "license": "MIT",

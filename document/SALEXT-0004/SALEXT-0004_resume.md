@@ -16,8 +16,8 @@ work_days:
     summary: Auth UX (progress/error); sidebar red + Reconnect Org; Notion card created
     source: etapa
   - date: 2026-09-11
-    minutes: 240
-    summary: Multi-Org polish — Authorize auto-list, nested sfdx root, SFCOMP context menus, local-left diff; push branch
+    minutes: 255
+    summary: Multi-Org polish; bump release version to 1.0.0 for Marketplace/Open VSX
     source: etapa
 ---
 
@@ -29,7 +29,7 @@ work_days:
 - **Status:** Em andamento
 - **Última Atualização:** 11/09/2026
 - **Branch:** `SALEXT-0004`
-- **Versão:** `0.2.0`
+- **Versão:** `1.0.0`
 - **Card Notion:** [SALEXT-0004](https://app.notion.com/p/3d8a6e0e45cf8138906cfaa18152fd01)
 - **Projeto Notion:** [Salesforce Extensions](https://app.notion.com/p/3cea6e0e45cf81ad80a3cdf9430dacbe)
 
@@ -39,7 +39,8 @@ Permitir comparar um arquivo local com Orgs adicionais (Local ↔ Outra Org), co
 ## Arquivos Modificados
 | Arquivo | Caminho Completo | Tipo de Alteração | Última Modificação |
 |---------|-------------------|-------------------|--------------------|
-| package.json | package.json | Modificado (v0.2.0, views, commands) | 08/09/2026 |
+| package.json | package.json | Modificado (v1.0.0 release) | 11/09/2026 |
+| package-lock.json | package-lock.json | Modificado (versão raiz 1.0.0) | 11/09/2026 |
 | constants.ts | src/util/constants.ts | Modificado | 08/09/2026 |
 | SfCliAdapter.ts | src/infrastructure/SfCliAdapter.ts | Modificado (listOrgs, login) | 08/09/2026 |
 | OrgSnapshotCache.ts | src/infrastructure/OrgSnapshotCache.ts | Modificado (cache por Org) | 08/09/2026 |
@@ -50,8 +51,8 @@ Permitir comparar um arquivo local com Orgs adicionais (Local ↔ Outra Org), co
 | OrgConnectionService.ts | src/services/OrgConnectionService.ts | Modificado (auto-list após Authorize) | 11/09/2026 |
 | ConnectedOrgsTreeProvider.ts | src/ui/ConnectedOrgsTreeProvider.ts | Modificado (não ocultar por username) | 11/09/2026 |
 | diffWithOtherOrg.ts | src/commands/diffWithOtherOrg.ts | Criado | 08/09/2026 |
-| CHANGELOG.md | CHANGELOG.md | Modificado | 08/09/2026 |
-| README.md | README.md | Modificado | 08/09/2026 |
+| CHANGELOG.md | CHANGELOG.md | Modificado (entrada 1.0.0) | 11/09/2026 |
+| README.md | README.md | Modificado (versão 1.0.0) | 11/09/2026 |
 
 ## Etapas Realizadas
 
@@ -91,10 +92,20 @@ diffWithOtherOrg.ts - 08/09/2026 - 6:10 PM
 extension.ts - 08/09/2026 - 6:10 PM
 CHANGELOG.md - 08/09/2026 - 6:15 PM
 README.md - 08/09/2026 - 6:15 PM
+package.json - 11/09/2026 - 4:28 PM
+package-lock.json - 11/09/2026 - 4:28 PM
+CHANGELOG.md - 11/09/2026 - 4:28 PM
+README.md - 11/09/2026 - 4:28 PM
+
+### Etapa 4 - Bump de versão para 1.0.0 (Marketplace / Open VSX)
+- **Data:** 11/09/2026
+- **O que foi solicitado:** Preparar o projeto para publicar a nova versão nos marketplaces do VS Code e Cursor com versão de subida **1.0.0**
+- **O que foi realizado:** Atualizado `version` em `package.json` e `package-lock.json`; entrada `1.0.0` no `CHANGELOG.md`; README alinhado (versão atual, What’s new, nome do VSIX)
+- **Arquivos afetados:** `package.json`, `package-lock.json`, `CHANGELOG.md`, `README.md`
 
 ## Observações
 - Repositório: https://github.com/lucasefr/salesforce-compare
-- Chat: **SALEXT-0004**
+- Chat: **SALEXT-0004** (renomear no Cursor: botão direito → Rename)
 - Sem commit ainda (aguardando usuário)
 
 ### Etapa 3 - Clareza multi-Org (temp file + azul)
