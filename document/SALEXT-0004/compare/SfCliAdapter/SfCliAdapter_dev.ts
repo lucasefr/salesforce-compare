@@ -67,7 +67,7 @@ export class SfCliAdapter {
         ['config', 'get', 'target-org', '--json'],
         workspacePath
       );
-      const parsed = this.parseJsonOutput(stdout) as {
+      const parsed = JSON.parse(stdout) as {
         result?: Array<{ value?: string; name?: string }>;
       };
       const match = parsed.result?.find((row) => row.name === 'target-org');
@@ -100,13 +100,6 @@ export class SfCliAdapter {
     const tempProject = await fs.mkdtemp(path.join(os.tmpdir(), 'sf-compare-proj-'));
     try {
       const sfdxProject = path.join(workspacePath, 'sfdx-project.json');
-      try {
-        await fs.access(sfdxProject);
-      } catch {
-        throw new Error(
-          `sfdx-project.json not found at "${sfdxProject}". Open the Salesforce DX project root (or a parent folder that contains it).`
-        );
-      }
       await fs.copyFile(sfdxProject, path.join(tempProject, 'sfdx-project.json'));
 
       // Copy .sf / .sfdx auth config references are resolved from user home;

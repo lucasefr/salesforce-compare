@@ -11,7 +11,7 @@ VS Code / Cursor extension that compares local Salesforce DX source files with t
 
 - **Connected Orgs sidebar** — connect extra Orgs for comparison; Original Org is labeled and remains the source of Equal/Different status
 - **Diff with Other Org…** — right-click an eligible file and compare **Local ↔** a selected comparison Org (retrieve-only)
-- **Authorize an Org…** — Production / Sandbox / Custom URL + alias (same style as SF Extension Pack); auto-triggered on auth errors during compare
+- **Login…** — opens `sf org login web` in a terminal so you can authenticate another Org, then Connect it
 - Comparison Orgs are stored **per workspace**; the extension never deploys to any Org
 
 ## What's new in 0.1.2
@@ -90,8 +90,8 @@ Then in VS Code / Cursor: **Extensions → … → Install from VSIX…** and se
 | `Salesforce Compare: Recheck Current File` | Force a fresh retrieve/compare against the Original Org |
 | `Salesforce Compare: Show Compare Result` | Show Equal / Different result (toast + Diff/Recheck actions) |
 | `Salesforce Compare: Clear Cache` | Clear Org snapshot cache and statuses |
-| `Salesforce Compare: Authorize an Org…` | Authorize and automatically list the Org in Connected Orgs (Production / Sandbox / Custom URL + alias) |
-| `Salesforce Compare: Disconnect Org` | Remove a comparison Org from this workspace |
+| `Salesforce Compare: Connect Org` | Add an authenticated Org as comparison-only |
+| `Salesforce Compare: Login…` | Run `sf org login web` in a terminal |
 | `Salesforce Compare: Disconnect Org` | Remove a comparison Org from this workspace |
 | `Salesforce Compare: Refresh Connected Orgs` | Refresh the Connected Orgs sidebar |
 

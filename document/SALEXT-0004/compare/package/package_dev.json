@@ -68,18 +68,6 @@
         "category": "Salesforce Compare"
       },
       {
-        "command": "salesforceCompare.diffWithOrg.context",
-        "title": "SFCOMP: Diff with Org"
-      },
-      {
-        "command": "salesforceCompare.diffWithOtherOrg.context",
-        "title": "SFCOMP: Diff with Other Org…"
-      },
-      {
-        "command": "salesforceCompare.recheckFile.context",
-        "title": "SFCOMP: Recheck Current File"
-      },
-      {
         "command": "salesforceCompare.showLastCheck",
         "title": "Show Compare Result",
         "category": "Salesforce Compare"
@@ -151,34 +139,34 @@
       ],
       "editor/context": [
         {
-          "command": "salesforceCompare.diffWithOrg.context",
+          "command": "salesforceCompare.diffWithOrg",
           "when": "resourceScheme == file && salesforceCompare.isEligible",
           "group": "salesforceCompare@1"
         },
         {
-          "command": "salesforceCompare.diffWithOtherOrg.context",
+          "command": "salesforceCompare.diffWithOtherOrg",
           "when": "resourceScheme == file && salesforceCompare.isEligible && salesforceCompare.hasComparisonOrgs",
           "group": "salesforceCompare@2"
         },
         {
-          "command": "salesforceCompare.recheckFile.context",
+          "command": "salesforceCompare.recheckFile",
           "when": "resourceScheme == file && salesforceCompare.isEligible",
           "group": "salesforceCompare@3"
         }
       ],
       "explorer/context": [
         {
-          "command": "salesforceCompare.diffWithOrg.context",
+          "command": "salesforceCompare.diffWithOrg",
           "when": "resourceScheme == file && !explorerResourceIsFolder && salesforceCompare.isEligible",
           "group": "salesforceCompare@1"
         },
         {
-          "command": "salesforceCompare.diffWithOtherOrg.context",
+          "command": "salesforceCompare.diffWithOtherOrg",
           "when": "resourceScheme == file && !explorerResourceIsFolder && salesforceCompare.isEligible && salesforceCompare.hasComparisonOrgs",
           "group": "salesforceCompare@2"
         },
         {
-          "command": "salesforceCompare.recheckFile.context",
+          "command": "salesforceCompare.recheckFile",
           "when": "resourceScheme == file && !explorerResourceIsFolder && salesforceCompare.isEligible",
           "group": "salesforceCompare@3"
         }
@@ -195,18 +183,6 @@
         {
           "command": "salesforceCompare.recheckFile",
           "when": "salesforceCompare.isEligible"
-        },
-        {
-          "command": "salesforceCompare.diffWithOrg.context",
-          "when": "false"
-        },
-        {
-          "command": "salesforceCompare.diffWithOtherOrg.context",
-          "when": "false"
-        },
-        {
-          "command": "salesforceCompare.recheckFile.context",
-          "when": "false"
         }
       ]
     },

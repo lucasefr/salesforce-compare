@@ -19,10 +19,6 @@ export const COMMANDS = {
   clearCache: 'salesforceCompare.clearCache',
   // SALEXT-0004 - start
   diffWithOtherOrg: 'salesforceCompare.diffWithOtherOrg',
-  /** File context-menu only — title includes SFCOMP: prefix. */
-  diffWithOrgContext: 'salesforceCompare.diffWithOrg.context',
-  diffWithOtherOrgContext: 'salesforceCompare.diffWithOtherOrg.context',
-  recheckFileContext: 'salesforceCompare.recheckFile.context',
   disconnectComparisonOrg: 'salesforceCompare.disconnectComparisonOrg',
   reconnectOrg: 'salesforceCompare.reconnectOrg',
   loginOrg: 'salesforceCompare.loginOrg',

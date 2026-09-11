@@ -1,33 +1,15 @@
-/**
+﻿/**
  * Shared constants for the Salesforce Compare extension.
  */
 export const EXTENSION_ID = 'salesforceCompare';
 export const ORG_SCHEME = 'salesforce-compare';
 export const CONTEXT_IS_ELIGIBLE = 'salesforceCompare.isEligible';
-// SALEXT-0004 - start
-export const ORG_SIDEBAR_SCHEME = 'salesforce-compare-org';
-export const CONTEXT_HAS_COMPARISON_ORGS = 'salesforceCompare.hasComparisonOrgs';
-export const CONTEXT_HAS_ORIGINAL_ORG = 'salesforceCompare.hasOriginalOrg';
-export const CONNECTED_ORGS_VIEW_ID = 'salesforceCompare.connectedOrgs';
-export const COMPARISON_ORGS_STORAGE_KEY = 'salesforceCompare.comparisonOrgs';
-// SALEXT-0004 - end
 
 export const COMMANDS = {
   diffWithOrg: 'salesforceCompare.diffWithOrg',
   recheckFile: 'salesforceCompare.recheckFile',
   showLastCheck: 'salesforceCompare.showLastCheck',
   clearCache: 'salesforceCompare.clearCache',
-  // SALEXT-0004 - start
-  diffWithOtherOrg: 'salesforceCompare.diffWithOtherOrg',
-  /** File context-menu only — title includes SFCOMP: prefix. */
-  diffWithOrgContext: 'salesforceCompare.diffWithOrg.context',
-  diffWithOtherOrgContext: 'salesforceCompare.diffWithOtherOrg.context',
-  recheckFileContext: 'salesforceCompare.recheckFile.context',
-  disconnectComparisonOrg: 'salesforceCompare.disconnectComparisonOrg',
-  reconnectOrg: 'salesforceCompare.reconnectOrg',
-  loginOrg: 'salesforceCompare.loginOrg',
-  refreshConnectedOrgs: 'salesforceCompare.refreshConnectedOrgs',
-  // SALEXT-0004 - end
 } as const;
 
 export const DEFAULT_SUPPORTED_EXTENSIONS = [
