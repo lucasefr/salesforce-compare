@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises';
+﻿import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { SalesforcePathMapper } from '../util/SalesforcePathMapper';
@@ -47,21 +47,16 @@ export class OrgSnapshotCache {
    * @param orgContent - Content retrieved from the Org.
    * @param orgHash - Precomputed hash of the Org content.
    * @param targetOrg - Org alias/username used for retrieve.
-   * @param options - When `scopeByOrg` is true, the snapshot is keyed by URI+Org
-   *   (used for secondary Org diffs). Primary auto-check keeps the default URI key.
    * @returns Snapshot entry written to disk.
    */
   public async put(
     uri: vscode.Uri,
     orgContent: string,
     orgHash: string,
-    targetOrg: string,
-    // SALEXT-0004 - start
-    options?: { scopeByOrg?: boolean }
-    // SALEXT-0004 - end
+    targetOrg: string
   ): Promise<SnapshotEntry> {
-    const key = this.buildKey(uri, options?.scopeByOrg ? targetOrg : undefined);
-    const safeName = Buffer.from(key).toString('base64url').slice(0, 100);
+    const key = SalesforcePathMapper.toCacheKey(uri);
+    const safeName = Buffer.from(key).toString('base64url').slice(0, 80);
     const cacheFilePath = path.join(this.cacheRoot, `${safeName}.snapshot`);
     await fs.writeFile(cacheFilePath, orgContent, 'utf8');
 
@@ -79,32 +74,27 @@ export class OrgSnapshotCache {
    * Returns the in-memory snapshot entry for a URI, if any.
    *
    * @param uri - Local file URI.
-   * @param targetOrg - Optional Org alias for secondary-org scoped snapshots.
    * @returns Snapshot entry or undefined.
    */
-  public get(uri: vscode.Uri, targetOrg?: string): SnapshotEntry | undefined {
-    return this.index.get(this.buildKey(uri, targetOrg));
+  public get(uri: vscode.Uri): SnapshotEntry | undefined {
+    return this.index.get(SalesforcePathMapper.toCacheKey(uri));
   }
 
   /**
    * Reads the cached Org content from disk for a URI.
    *
    * @param uri - Local file URI.
-   * @param targetOrg - Optional Org alias for secondary-org scoped snapshots.
    * @returns Org content string, or undefined when missing.
    */
-  public async readContent(
-    uri: vscode.Uri,
-    targetOrg?: string
-  ): Promise<string | undefined> {
-    const entry = this.get(uri, targetOrg);
+  public async readContent(uri: vscode.Uri): Promise<string | undefined> {
+    const entry = this.get(uri);
     if (!entry) {
       return undefined;
     }
     try {
       return await fs.readFile(entry.cacheFilePath, 'utf8');
     } catch {
-      this.index.delete(this.buildKey(uri, targetOrg));
+      this.index.delete(SalesforcePathMapper.toCacheKey(uri));
       return undefined;
     }
   }
@@ -119,21 +109,4 @@ export class OrgSnapshotCache {
     await fs.rm(this.cacheRoot, { recursive: true, force: true });
     await fs.mkdir(this.cacheRoot, { recursive: true });
   }
-
-  // SALEXT-0004 - start
-  /**
-   * Builds the cache index key for a local URI and optional Org scope.
-   *
-   * @param uri - Local file URI.
-   * @param targetOrg - When set, scopes the key to that Org (comparison Orgs).
-   * @returns Stable cache key string.
-   */
-  private buildKey(uri: vscode.Uri, targetOrg?: string): string {
-    const base = SalesforcePathMapper.toCacheKey(uri);
-    if (!targetOrg) {
-      return base;
-    }
-    return `${base}::org=${targetOrg}`;
-  }
-  // SALEXT-0004 - end
 }

@@ -1,30 +1,17 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 import { diffWithOrg } from './commands/diffWithOrg';
-import { diffWithOtherOrg } from './commands/diffWithOtherOrg';
 import { recheckFile } from './commands/recheckFile';
 import { showLastCheck } from './commands/showLastCheck';
 import { OrgSnapshotCache } from './infrastructure/OrgSnapshotCache';
 import { SfCliAdapter } from './infrastructure/SfCliAdapter';
 import { OrgContentProvider } from './providers/OrgContentProvider';
-import { ComparisonFileDecorationProvider } from './providers/ComparisonFileDecorationProvider';
 import { StatusDecorationProvider } from './providers/StatusDecorationProvider';
 import { CompareService } from './services/CompareService';
-import { ComparisonTempFileService } from './services/ComparisonTempFileService';
-import { ConnectedOrgsStore } from './services/ConnectedOrgsStore';
 import { DeployWatcher } from './services/DeployWatcher';
 import { FileStatusStore } from './services/FileStatusStore';
-import { OrgAuthStatusStore } from './services/OrgAuthStatusStore';
-import { OrgConnectionService } from './services/OrgConnectionService';
 import { OrgResolver } from './services/OrgResolver';
-import { OrgSidebarDecorationProvider } from './providers/OrgSidebarDecorationProvider';
-import { ConnectedOrgTreeItem, ConnectedOrgsTreeProvider } from './ui/ConnectedOrgsTreeProvider';
 import { StatusBarController } from './ui/StatusBarController';
-import {
-  COMMANDS,
-  CONNECTED_ORGS_VIEW_ID,
-  CONTEXT_IS_ELIGIBLE,
-  ORG_SCHEME,
-} from './util/constants';
+import { COMMANDS, CONTEXT_IS_ELIGIBLE, ORG_SCHEME } from './util/constants';
 import { SalesforcePathMapper } from './util/SalesforcePathMapper';
 
 /** URIs currently being saved by the user (to ignore external-sync handlers). */
@@ -53,84 +40,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const deployWatcher = new DeployWatcher(compareService);
   deployWatcher.start();
 
-  // SALEXT-0004 - start
-  const connectedOrgsStore = new ConnectedOrgsStore(context.workspaceState);
-  const orgAuthStatusStore = new OrgAuthStatusStore();
-  const orgConnectionService = new OrgConnectionService(
-    sfCli,
-    orgResolver,
-    connectedOrgsStore,
-    orgAuthStatusStore
-  );
-  const connectedOrgsTree = new ConnectedOrgsTreeProvider(
-    orgConnectionService,
-    orgAuthStatusStore
-  );
-  const comparisonTempFiles = new ComparisonTempFileService(context.globalStorageUri);
-  await comparisonTempFiles.initialize();
-  const comparisonDecorationProvider = new ComparisonFileDecorationProvider(
-    comparisonTempFiles
-  );
-  const orgSidebarDecorationProvider = new OrgSidebarDecorationProvider(
-    orgAuthStatusStore
-  );
-  compareService.setAuthRecoveryHandler(orgConnectionService);
-  await orgConnectionService.refreshHasComparisonOrgsContext();
-  // SALEXT-0004 - end
-
   context.subscriptions.push(
     store,
     orgContentProvider,
     decorationProvider,
     statusBar,
     deployWatcher,
-    // SALEXT-0004 - start
-    connectedOrgsStore,
-    orgAuthStatusStore,
-    connectedOrgsTree,
-    comparisonTempFiles,
-    comparisonDecorationProvider,
-    orgSidebarDecorationProvider,
-    // SALEXT-0004 - end
     vscode.workspace.registerTextDocumentContentProvider(ORG_SCHEME, orgContentProvider),
-    vscode.window.registerFileDecorationProvider(decorationProvider),
-    // SALEXT-0004 - start
-    vscode.window.registerFileDecorationProvider(comparisonDecorationProvider),
-    vscode.window.registerFileDecorationProvider(orgSidebarDecorationProvider),
-    vscode.window.registerTreeDataProvider(CONNECTED_ORGS_VIEW_ID, connectedOrgsTree),
-    connectedOrgsStore.onDidChange(() => {
-      void connectedOrgsTree.refresh();
-      void orgConnectionService.refreshHasComparisonOrgsContext();
-    })
-    // SALEXT-0004 - end
+    vscode.window.registerFileDecorationProvider(decorationProvider)
   );
-
-  // SALEXT-0004 - start
-  // Register the tree first, then resolve Original Org so the first paint is correct.
-  await connectedOrgsTree.initialize();
-  // SALEXT-0004 - end
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.diffWithOrg, (uri?: vscode.Uri) =>
-      diffWithOrg(compareService, orgContentProvider, orgConnectionService, uri)
+      diffWithOrg(compareService, orgContentProvider, uri)
     ),
     vscode.commands.registerCommand(COMMANDS.recheckFile, (uri?: vscode.Uri) =>
-      recheckFile(compareService, orgConnectionService, uri)
+      recheckFile(compareService, uri)
     ),
-    // SALEXT-0004 - start
-    // Context-menu aliases (SFCOMP: titles) — same handlers as the palette commands.
-    vscode.commands.registerCommand(COMMANDS.diffWithOrgContext, (uri?: vscode.Uri) =>
-      diffWithOrg(compareService, orgContentProvider, orgConnectionService, uri)
-    ),
-    vscode.commands.registerCommand(
-      COMMANDS.diffWithOtherOrgContext,
-      (uri?: vscode.Uri) =>
-        diffWithOtherOrg(compareService, orgConnectionService, comparisonTempFiles, uri)
-    ),
-    vscode.commands.registerCommand(COMMANDS.recheckFileContext, (uri?: vscode.Uri) =>
-      recheckFile(compareService, orgConnectionService, uri)
-    ),
-    // SALEXT-0004 - end
     vscode.commands.registerCommand(COMMANDS.showLastCheck, () =>
       showLastCheck(compareService)
     ),
@@ -138,58 +64,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       await cache.clear();
       store.clear();
       await vscode.window.showInformationMessage('Salesforce Compare: cache cleared.');
-    }),
-    // SALEXT-0004 - start
-    vscode.commands.registerCommand(COMMANDS.diffWithOtherOrg, (uri?: vscode.Uri) =>
-      diffWithOtherOrg(compareService, orgConnectionService, comparisonTempFiles, uri)
-    ),
-    vscode.commands.registerCommand(
-      COMMANDS.disconnectComparisonOrg,
-      async (item?: ConnectedOrgTreeItem) => {
-        const alias =
-          item?.role === 'comparison'
-            ? item.alias
-            : (
-                await vscode.window.showQuickPick(
-                  orgConnectionService.getComparisonOrgs().map((org) => org.alias),
-                  { placeHolder: 'Select Org to disconnect' }
-                )
-              );
-        if (!alias) {
-          return;
-        }
-        await orgConnectionService.disconnectComparisonOrg(alias);
-        await connectedOrgsTree.refresh();
-      }
-    ),
-    vscode.commands.registerCommand(
-      COMMANDS.reconnectOrg,
-      async (item?: ConnectedOrgTreeItem) => {
-        const alias =
-          item?.alias ||
-          (await vscode.window.showInputBox({
-            prompt: 'Org alias to reconnect',
-            placeHolder: 'e.g. uat',
-          }));
-        if (!alias?.trim()) {
-          return;
-        }
-        const role = item?.role ?? 'comparison';
-        const ok = await orgConnectionService.reconnectOrg(alias.trim(), role);
-        if (ok) {
-          await connectedOrgsTree.refresh();
-        }
-      }
-    ),
-    vscode.commands.registerCommand(COMMANDS.loginOrg, async () => {
-      await orgConnectionService.loginOrg();
-      await connectedOrgsTree.refresh();
-    }),
-    vscode.commands.registerCommand(COMMANDS.refreshConnectedOrgs, async () => {
-      await connectedOrgsTree.refreshFromCli();
-      await orgConnectionService.refreshHasComparisonOrgsContext();
     })
-    // SALEXT-0004 - end
   );
 
   const updateEligibleContext = (uri: vscode.Uri | undefined): void => {

@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 import { OrgSnapshotCache } from '../infrastructure/OrgSnapshotCache';
 import { ORG_SCHEME } from '../util/constants';
 
@@ -21,28 +21,15 @@ export class OrgContentProvider implements vscode.TextDocumentContentProvider {
    * Builds a virtual URI that maps back to a local file URI.
    *
    * @param localUri - Local file URI being compared.
-   * @param targetOrg - Optional Org alias for secondary-org scoped snapshots.
    * @returns Virtual URI with scheme `salesforce-compare`.
    */
-  public static toOrgUri(localUri: vscode.Uri, targetOrg?: string): vscode.Uri {
-    // SALEXT-0004 - start
-    const params = new URLSearchParams();
-    params.set('local', localUri.toString());
-    if (targetOrg) {
-      params.set('org', targetOrg);
-    }
-    const baseName = localUri.path.split('/').pop() || 'file';
-    // Distinct virtual path so the diff tab does not look like the local file.
-    const labelPath = targetOrg
-      ? `/comparison/${targetOrg}/${baseName}`
-      : `/original/${baseName}`;
+  public static toOrgUri(localUri: vscode.Uri): vscode.Uri {
     return vscode.Uri.from({
       scheme: ORG_SCHEME,
-      path: labelPath,
-      query: params.toString(),
+      path: localUri.path,
+      query: `local=${encodeURIComponent(localUri.toString())}`,
       fragment: localUri.fragment,
     });
-    // SALEXT-0004 - end
   }
 
   /**
@@ -57,22 +44,8 @@ export class OrgContentProvider implements vscode.TextDocumentContentProvider {
     if (!local) {
       return undefined;
     }
-    return vscode.Uri.parse(local);
+    return vscode.Uri.parse(decodeURIComponent(local));
   }
-
-  // SALEXT-0004 - start
-  /**
-   * Reads the Org alias from a virtual Org URI query, when present.
-   *
-   * @param orgUri - Virtual URI.
-   * @returns Org alias/username or undefined for the primary (Original) snapshot.
-   */
-  public static toTargetOrg(orgUri: vscode.Uri): string | undefined {
-    const params = new URLSearchParams(orgUri.query);
-    const org = params.get('org');
-    return org?.trim() || undefined;
-  }
-  // SALEXT-0004 - end
 
   /**
    * Provides the Org-side text content for a virtual URI.
@@ -85,10 +58,7 @@ export class OrgContentProvider implements vscode.TextDocumentContentProvider {
     if (!localUri) {
       return '/* Unable to resolve local file for Org content */\n';
     }
-    // SALEXT-0004 - start
-    const targetOrg = OrgContentProvider.toTargetOrg(uri);
-    const content = await this.cache.readContent(localUri, targetOrg);
-    // SALEXT-0004 - end
+    const content = await this.cache.readContent(localUri);
     if (content === undefined) {
       return '/* Org snapshot not available. Run Recheck Current File first. */\n';
     }
@@ -99,10 +69,9 @@ export class OrgContentProvider implements vscode.TextDocumentContentProvider {
    * Notifies editors that Org content for a local file changed.
    *
    * @param localUri - Local file whose Org snapshot was refreshed.
-   * @param targetOrg - Optional Org alias for secondary-org scoped snapshots.
    */
-  public notifyChanged(localUri: vscode.Uri, targetOrg?: string): void {
-    this._onDidChange.fire(OrgContentProvider.toOrgUri(localUri, targetOrg));
+  public notifyChanged(localUri: vscode.Uri): void {
+    this._onDidChange.fire(OrgContentProvider.toOrgUri(localUri));
   }
 
   /**

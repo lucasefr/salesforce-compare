@@ -117,20 +117,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand(COMMANDS.recheckFile, (uri?: vscode.Uri) =>
       recheckFile(compareService, orgConnectionService, uri)
     ),
-    // SALEXT-0004 - start
-    // Context-menu aliases (SFCOMP: titles) — same handlers as the palette commands.
-    vscode.commands.registerCommand(COMMANDS.diffWithOrgContext, (uri?: vscode.Uri) =>
-      diffWithOrg(compareService, orgContentProvider, orgConnectionService, uri)
-    ),
-    vscode.commands.registerCommand(
-      COMMANDS.diffWithOtherOrgContext,
-      (uri?: vscode.Uri) =>
-        diffWithOtherOrg(compareService, orgConnectionService, comparisonTempFiles, uri)
-    ),
-    vscode.commands.registerCommand(COMMANDS.recheckFileContext, (uri?: vscode.Uri) =>
-      recheckFile(compareService, orgConnectionService, uri)
-    ),
-    // SALEXT-0004 - end
     vscode.commands.registerCommand(COMMANDS.showLastCheck, () =>
       showLastCheck(compareService)
     ),
