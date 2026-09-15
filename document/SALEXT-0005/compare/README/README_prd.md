@@ -2,17 +2,22 @@
 
 VS Code / Cursor extension that compares local Salesforce DX source files with the connected Org (**retrieve-only**). It shows sync status on tabs/explorer and opens a Git-style diff against the Org version.
 
-**Current version:** `1.1.0` · Publisher: [LeftConsult](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
+**Current version:** `1.0.0` · Publisher: [LeftConsult](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
 
 - **VS Code / Visual Studio Marketplace:** [LeftConsult.salesforce-compare](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
 - **Cursor (Open VSX):** [open-vsx.org/extension/LeftConsult/salesforce-compare](https://open-vsx.org/extension/LeftConsult/salesforce-compare) — after Open VSX publish, search **Salesforce Compare** in Cursor Extensions
 
-## What's new in 1.1.0
+## What's new in 1.0.0
 
-- **Diff with Org order** — side-by-side diff shows **Local on the left** and the **Original Org on the right** (same reading order as Diff with Other Org)
-- **Missing file in comparison Org** — Diff with Other Org… opens an **empty Org side** when the metadata does not exist in the selected Org (with a clear toast), instead of showing the local file as if it were in that Org
+- **First stable release** for VS Code Marketplace and Open VSX (Cursor)
+- **Connected Orgs sidebar** — connect extra Orgs for comparison; Original Org is labeled and remains the source of Equal/Different status
+- **Diff with Other Org…** — right-click an eligible file and compare **Local ↔** a selected comparison Org (retrieve-only)
+- **Authorize an Org…** — Production / Sandbox / Custom URL + alias; auto-triggered on auth errors during compare
+- **Metadata XML** — compare standalone Salesforce `*-meta.xml` files (objects, fields, layouts, flows, permission sets, profiles, flexipages, validation rules, etc.)
+- **Background queue** — opening or switching files does not cancel prior compares; each file finishes in the background and updates its own badge
+- Comparison Orgs are stored **per workspace**; the extension never deploys to any Org
 
-See [CHANGELOG.md](CHANGELOG.md) for the full history (including 1.0.0 Multi-Org / Connected Orgs).
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 ## Features
 
@@ -20,12 +25,11 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history (including 1.0.0 Multi-Org
 - **Tab / Explorer flags** — green `●` when equal to Org, red `●` when different, `…` while checking, `!` on error.
 - **Status bar result** — `SF Equal` (green check), `SF Different` (red highlight), `SF Comparing…`, or `SF Error`. Click it for the detailed toast.
 - **Show Compare Result** — toast with **Equal to Org** / **Different from Org** / **Comparing…**, last check age, Org, and background job count; Diff / Recheck actions when useful.
-- **Diff with Org** — command and right-click menu open a side-by-side diff: **Local (left) ↔ Original Org (right)**.
-- **Diff with Other Org…** — pick a comparison Org and open **Local (left) ↔ that Org (right)**. If the file is not in that Org, the right side is empty and a toast explains it.
+- **Diff with Org** — command and right-click menu open a side-by-side diff (Org ↔ Local).
 - **Save awareness** — saving local changes marks the file as different when it no longer matches the last Org snapshot.
 - **Deploy awareness** — after a successful `sf project deploy` (terminal) or known Salesforce Extension Pack deploy signals, open eligible files are rechecked.
 - **Never deploys** — the extension only runs retrieve for comparison.
-- **Multi-Org (comparison)** — Activity Bar view **Salesforce Compare → Connected Orgs** lists the **Original** Org (auto-check) and extra Orgs used only for **Diff with Other Org…**.
+- **Multi-Org (comparison)** — Activity Bar view **Salesforce Compare → Connected Orgs** lists the **Original** Org (auto-check) and extra Orgs used only for **Diff with Other Org…** (Local ↔ selected Org).
 
 ## Status meanings
 
@@ -49,7 +53,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history (including 1.0.0 Multi-Org
 
 1. Open **Extensions** in VS Code (`Ctrl+Shift+X`)
 2. Search for **Salesforce Compare**
-3. Click **Install** (or **Update** to get `1.1.0`)
+3. Click **Install** (or **Update** to get `1.0.0`)
 
 Or install directly: [Salesforce Compare on Marketplace](https://marketplace.visualstudio.com/items?itemName=LeftConsult.salesforce-compare)
 
@@ -71,18 +75,19 @@ npm run build
 npm run package
 ```
 
-Then in VS Code / Cursor: **Extensions → … → Install from VSIX…** and select the generated `.vsix` (`salesforce-compare-1.1.0.vsix`).
+Then in VS Code / Cursor: **Extensions → … → Install from VSIX…** and select the generated `.vsix` (`salesforce-compare-1.0.0.vsix`).
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `Salesforce Compare: Diff with Org` | Retrieve (if needed) and open Local (left) ↔ Original Org (right) |
-| `Salesforce Compare: Diff with Other Org…` | Pick a comparison Org and open Local (left) ↔ that Org (right); empty Org side if missing |
+| `Salesforce Compare: Diff with Org` | Retrieve (if needed) and open Org ↔ Local diff (Original Org) |
+| `Salesforce Compare: Diff with Other Org…` | Pick a comparison Org and open Local ↔ that Org diff |
 | `Salesforce Compare: Recheck Current File` | Force a fresh retrieve/compare against the Original Org |
 | `Salesforce Compare: Show Compare Result` | Show Equal / Different result (toast + Diff/Recheck actions) |
 | `Salesforce Compare: Clear Cache` | Clear Org snapshot cache and statuses |
 | `Salesforce Compare: Authorize an Org…` | Authorize and automatically list the Org in Connected Orgs (Production / Sandbox / Custom URL + alias) |
+| `Salesforce Compare: Disconnect Org` | Remove a comparison Org from this workspace |
 | `Salesforce Compare: Disconnect Org` | Remove a comparison Org from this workspace |
 | `Salesforce Compare: Refresh Connected Orgs` | Refresh the Connected Orgs sidebar |
 

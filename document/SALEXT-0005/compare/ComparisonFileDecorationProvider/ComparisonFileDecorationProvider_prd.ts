@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 import { ORG_SCHEME } from '../util/constants';
 import { OrgContentProvider } from './OrgContentProvider';
 import { ComparisonTempFileService } from '../services/ComparisonTempFileService';
@@ -38,8 +38,8 @@ export class ComparisonFileDecorationProvider implements vscode.FileDecorationPr
       const info = this.tempFiles.getInfo(uri);
       const org = info?.orgAlias ?? this.extractOrgFromTempName(uri);
       return {
-        badge: '⇄',
-        tooltip: `Salesforce Compare — ${ComparisonTempFileService.formatOrgLabel(org)} (temporary snapshot, retrieve-only)`,
+        badge: 'Ôçä',
+        tooltip: `Salesforce Compare ÔÇö ${ComparisonTempFileService.formatOrgLabel(org)} (temporary snapshot, retrieve-only)`,
         color: new vscode.ThemeColor('salesforceCompare.comparisonOrg'),
         propagate: false,
       };
@@ -49,8 +49,8 @@ export class ComparisonFileDecorationProvider implements vscode.FileDecorationPr
       const targetOrg = OrgContentProvider.toTargetOrg(uri);
       if (targetOrg) {
         return {
-          badge: '⇄',
-          tooltip: `Salesforce Compare — ${ComparisonTempFileService.formatOrgLabel(targetOrg)}`,
+          badge: 'Ôçä',
+          tooltip: `Salesforce Compare ÔÇö ${ComparisonTempFileService.formatOrgLabel(targetOrg)}`,
           color: new vscode.ThemeColor('salesforceCompare.comparisonOrg'),
           propagate: false,
         };
@@ -73,12 +73,8 @@ export class ComparisonFileDecorationProvider implements vscode.FileDecorationPr
     const localIdx = base.indexOf(localX);
     if (localIdx >= 0) {
       const after = base.slice(localIdx + localX.length);
-      // SALEXT-0005 - start
-      // Names may be `…LOCAL_x_UAT.MISSING.cls` when the Org lacks the file.
-      const withoutMissing = after.replace(/\.MISSING(?=\.|$)/i, '');
-      const dot = withoutMissing.lastIndexOf('.');
-      return (dot > 0 ? withoutMissing.slice(0, dot) : withoutMissing) || 'comparison';
-      // SALEXT-0005 - end
+      const dot = after.lastIndexOf('.');
+      return (dot > 0 ? after.slice(0, dot) : after) || 'comparison';
     }
     const marker = '.__from__';
     const idx = base.indexOf(marker);

@@ -7,7 +7,6 @@ import { runRetrieveWithAuthRetry } from '../util/retrieveWithAuthRetry';
 
 /**
  * Opens a Git-style diff between the local file and the cached Org version.
- * Local workspace file is on the left; Original Org content is on the right.
  *
  * @param compareService - Compare orchestrator (ensures Org snapshot exists).
  * @param orgContentProvider - Virtual content provider for the Org side.
@@ -59,8 +58,5 @@ export async function diffWithOrg(
     ? `${localName} — LOCAL x ${originalAlias.toUpperCase()}`
     : `${localName} — LOCAL x ORIGINAL`;
   // SALEXT-0004 - end
-  // SALEXT-0005 - start
-  // Local workspace on the left, Original Org (virtual) on the right.
-  await vscode.commands.executeCommand('vscode.diff', target, orgUri, title);
-  // SALEXT-0005 - end
+  await vscode.commands.executeCommand('vscode.diff', orgUri, target, title);
 }

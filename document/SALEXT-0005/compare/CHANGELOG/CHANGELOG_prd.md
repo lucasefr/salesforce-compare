@@ -2,20 +2,6 @@
 
 All notable changes to **Salesforce Compare** are documented here.
 
-## 1.1.0 — 2026-09-15
-
-### Changed
-
-- **Diff with Org (Original)** — side-by-side order is now **Local (left) ↔ Org (right)**, matching Diff with Other Org and typical “workspace vs remote” reading order. Diff title remains `FILE — LOCAL x ALIAS`.
-
-### Fixed
-
-- **Diff with Other Org when metadata is missing** — if the file does not exist in the selected comparison Org, the Org side of the diff is **empty** (no longer reuses the local seed content). A toast explains that the file was not found; the diff title includes `(missing in Org)`.
-
-### Notes
-
-- Retrieve remains isolated and retrieve-only; Equal/Different badges still reflect **Local vs Original Org** only
-
 ## 1.0.0 — 2026-09-11
 
 ### Notes
