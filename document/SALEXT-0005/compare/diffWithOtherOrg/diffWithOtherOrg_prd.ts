@@ -1,4 +1,4 @@
-import * as path from 'path';
+﻿import * as path from 'path';
 import * as vscode from 'vscode';
 import { CompareService } from '../services/CompareService';
 import { ComparisonTempFileService } from '../services/ComparisonTempFileService';
@@ -10,9 +10,6 @@ import { runRetrieveWithAuthRetry } from '../util/retrieveWithAuthRetry';
  * 1) Writes a temporary Org snapshot named `File.LOCAL_x_ORG.ext` (blue label)
  * 2) Opens vscode.diff with the local file on the left and the Org temp on the right
  *    (no extra editor split)
- *
- * When the metadata is missing in the comparison Org, the Org side is an empty
- * document (never the local seed leftover).
  *
  * Never deploys. Requires at least one connected comparison Org.
  *
@@ -60,7 +57,7 @@ export async function diffWithOtherOrg(
 
   const selected = await vscode.window.showQuickPick(picks, {
     placeHolder: 'Select comparison Org',
-    title: 'Salesforce Compare — Diff with Other Org',
+    title: 'Salesforce Compare ÔÇö Diff with Other Org',
   });
   if (!selected) {
     return;
@@ -71,7 +68,7 @@ export async function diffWithOtherOrg(
   const compareLabel = ComparisonTempFileService.formatLocalVsOrgLabel(orgAlias);
 
   const content = await runRetrieveWithAuthRetry({
-    progressTitle: `Salesforce Compare: retrieving "${localName}"…`,
+    progressTitle: `Salesforce Compare: retrieving "${localName}"ÔÇª`,
     orgAlias,
     retrieve: () => compareService.ensureOrgContentForOrg(target, orgAlias),
     onAuthFailure: (alias, message) =>
@@ -82,39 +79,11 @@ export async function diffWithOtherOrg(
     return;
   }
 
-  // SALEXT-0005 - start
-  const missingInOrg = content.length === 0;
-  if (missingInOrg) {
-    await vscode.window.showInformationMessage(
-      `Salesforce Compare: "${localName}" was not found in Org ${orgAlias}. Showing an empty Org side.`
-    );
-
-    // Brand-new in-memory document for the right side so Diff cannot reuse a stale
-    // LOCAL_x_* buffer that still held the local seed content.
-    const languageId =
-      vscode.window.activeTextEditor?.document.uri.toString() === target.toString()
-        ? vscode.window.activeTextEditor.document.languageId
-        : languageIdForFile(target);
-    const emptyOrgSide = await vscode.workspace.openTextDocument({
-      content: '',
-      language: languageId,
-    });
-    const missingTitle = `${localName} — ${compareLabel} (missing in Org)`;
-    await vscode.commands.executeCommand(
-      'vscode.diff',
-      target,
-      emptyOrgSide.uri,
-      missingTitle,
-      { preview: false }
-    );
-    return;
-  }
-
+  // SALEXT-0004 - start
   const tempInfo = await tempFiles.createOrUpdate(target, orgAlias, content);
-  await tempFiles.closeExistingDiffTabs(tempInfo.uri);
 
-  // Local workspace on the left, Org temp snapshot on the right — no separate split tab.
-  const title = `${localName} — ${compareLabel}`;
+  // Local workspace on the left, Org temp snapshot on the right ÔÇö no separate split tab.
+  const title = `${localName} ÔÇö ${compareLabel}`;
   await vscode.commands.executeCommand(
     'vscode.diff',
     target,
@@ -122,35 +91,5 @@ export async function diffWithOtherOrg(
     title,
     { preview: false }
   );
-  // SALEXT-0005 - end
-}
-
-/**
- * Picks a language id for an empty Org-side untitled document from the file extension.
- *
- * @param uri - Local file URI being compared.
- * @returns VS Code language id string.
- */
-function languageIdForFile(uri: vscode.Uri): string {
-  const ext = path.extname(uri.fsPath).toLowerCase();
-  switch (ext) {
-    case '.cls':
-    case '.trigger':
-    case '.apex':
-      return 'apex';
-    case '.js':
-      return 'javascript';
-    case '.html':
-    case '.page':
-    case '.component':
-      return 'html';
-    case '.css':
-      return 'css';
-    case '.xml':
-      return 'xml';
-    case '.soql':
-      return 'soql';
-    default:
-      return 'plaintext';
-  }
+  // SALEXT-0004 - end
 }

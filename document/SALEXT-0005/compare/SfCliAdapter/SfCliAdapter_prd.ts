@@ -84,15 +84,12 @@ export class SfCliAdapter {
    * temp project, runs `sf project retrieve start --source-dir`, then reads
    * the overwritten file content.
    *
-   * When the metadata does not exist in the target Org, returns empty `content`
-   * (so Diff shows an empty Org side instead of the local seed file).
-   *
    * @param workspacePath - Salesforce project root (contains sfdx-project.json).
    * @param relativeSourcePath - Path relative to the workspace for --source-dir.
    * @param absoluteLocalPath - Absolute path of the local file (seed + basename).
    * @param targetOrg - Optional org alias/username override.
-   * @returns Retrieved file path and content (empty string when missing in Org).
-   * @throws Error when CLI fails for reasons other than missing metadata.
+   * @returns Retrieved file path and content.
+   * @throws Error when CLI fails or the retrieved file cannot be read.
    */
   public async retrieveMetadataToTemp(
     workspacePath: string,
@@ -130,12 +127,6 @@ export class SfCliAdapter {
         // Companion meta is optional for some types.
       }
 
-      // SALEXT-0005 - start
-      // Seed is only a retrieve hint. If the Org lacks the component, CLI often
-      // leaves the seed unchanged — never treat that leftover as Org content.
-      const seedContent = await fs.readFile(destFile, 'utf8');
-      // SALEXT-0005 - end
-
       const args = [
         'project',
         'retrieve',
@@ -155,169 +146,14 @@ export class SfCliAdapter {
         args.push('--target-org', targetOrg);
       }
 
-      // SALEXT-0005 - start
-      let stdout = '';
-      try {
-        stdout = await this.runSf(args, tempProject);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        if (this.isMetadataMissingFromOrg(message)) {
-          return { retrievedFilePath: destFile, content: '' };
-        }
-        throw error instanceof Error ? error : new Error(message);
-      }
+      await this.runSf(args, tempProject);
 
-      let content = '';
-      try {
-        content = await fs.readFile(destFile, 'utf8');
-      } catch {
-        return { retrievedFilePath: destFile, content: '' };
-      }
-
-      if (
-        this.shouldTreatRetrieveAsMissing(
-          stdout,
-          relativeSourcePath,
-          seedContent,
-          content
-        )
-      ) {
-        return { retrievedFilePath: destFile, content: '' };
-      }
-
+      const content = await fs.readFile(destFile, 'utf8');
       return { retrievedFilePath: destFile, content };
-      // SALEXT-0005 - end
     } finally {
       void fs.rm(tempProject, { recursive: true, force: true }).catch(() => undefined);
     }
   }
-
-  // SALEXT-0005 - start
-  /**
-   * Returns whether CLI error/warning text indicates the metadata is absent
-   * from the target Org (as opposed to auth or generic retrieve failures).
-   *
-   * @param message - CLI error message or concatenated retrieve messages.
-   * @returns True when the component appears to be missing in the Org.
-   */
-  private isMetadataMissingFromOrg(message: string): boolean {
-    const text = message.trim();
-    if (!text) {
-      return false;
-    }
-    if (/entity of type .+ cannot be found/i.test(text)) {
-      return true;
-    }
-    if (/named ['"]?[^'"]+['"]? cannot be found/i.test(text)) {
-      return true;
-    }
-    const lower = text.toLowerCase();
-    const markers = [
-      'cannot be found',
-      'could not be found',
-      'could not find',
-      'not found in the org',
-      'not found in org',
-      'does not exist in the org',
-      'no source-backed components',
-      'no components retrieved',
-      'nothing retrieved',
-      'nothing to retrieve',
-    ];
-    return markers.some((marker) => lower.includes(marker));
-  }
-
-  /**
-   * Decides whether an unchanged seed file after retrieve should be treated as
-   * "missing in Org" (return empty) instead of Org content equal to local.
-   *
-   * @param stdout - Raw `sf project retrieve start --json` stdout.
-   * @param relativeSourcePath - Relative source path requested for retrieve.
-   * @param seedContent - Temp file content before retrieve.
-   * @param content - Temp file content after retrieve.
-   * @returns True when Org side should be shown as empty.
-   */
-  private shouldTreatRetrieveAsMissing(
-    stdout: string,
-    relativeSourcePath: string,
-    seedContent: string,
-    content: string
-  ): boolean {
-    if (content !== seedContent) {
-      return false;
-    }
-
-    let parsed: {
-      message?: string;
-      name?: string;
-      result?: {
-        files?: Array<Record<string, unknown>>;
-        fileProperties?: Array<Record<string, unknown>>;
-        messages?: Array<Record<string, unknown> | string>;
-        message?: string;
-        status?: string;
-      };
-    };
-    try {
-      parsed = this.parseJsonOutput(stdout) as typeof parsed;
-    } catch {
-      return false;
-    }
-
-    const result = parsed.result ?? {};
-    const messageParts = [
-      parsed.message,
-      parsed.name,
-      result.message,
-      ...(result.messages ?? []).map((entry) => {
-        if (typeof entry === 'string') {
-          return entry;
-        }
-        return String(
-          entry.problem ?? entry.message ?? entry.fileName ?? ''
-        );
-      }),
-    ].filter((part) => Boolean(part && String(part).trim()));
-
-    if (this.isMetadataMissingFromOrg(messageParts.join('\n'))) {
-      return true;
-    }
-
-    const files = [
-      ...(Array.isArray(result.files) ? result.files : []),
-      ...(Array.isArray(result.fileProperties) ? result.fileProperties : []),
-    ];
-    const baseName = path.basename(relativeSourcePath).toLowerCase();
-    const normalizedRelative = relativeSourcePath.replace(/\\/g, '/').toLowerCase();
-
-    const matching = files.filter((file) => {
-      const candidate = String(
-        file.filePath ?? file.fullName ?? file.path ?? file.fileName ?? ''
-      )
-        .replace(/\\/g, '/')
-        .toLowerCase();
-      return (
-        candidate.endsWith(`/${baseName}`) ||
-        candidate.endsWith(baseName) ||
-        candidate.includes(normalizedRelative)
-      );
-    });
-
-    if (matching.length === 0) {
-      return true;
-    }
-
-    return matching.every((file) => {
-      const state = String(file.state ?? file.status ?? '').toLowerCase();
-      const errorText = String(file.error ?? file.problem ?? '');
-      return (
-        state === 'failed' ||
-        state === 'error' ||
-        this.isMetadataMissingFromOrg(errorText)
-      );
-    });
-  }
-  // SALEXT-0005 - end
 
   /**
    * Executes `sf` with the given arguments and returns stdout.

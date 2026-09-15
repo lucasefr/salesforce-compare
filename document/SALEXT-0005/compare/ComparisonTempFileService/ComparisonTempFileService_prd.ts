@@ -50,12 +50,9 @@ export class ComparisonTempFileService {
    * Writes (or overwrites) a temp file with the comparison Org content and
    * registers it for blue tab/explorer labeling.
    *
-   * Forces any already-open editor model for this path to match disk content
-   * (VS Code otherwise keeps a stale buffer and Diff shows old Org text).
-   *
    * @param localUri - Local workspace file being compared.
    * @param orgAlias - Comparison Org alias/username.
-   * @param content - Retrieved Org file content (empty when missing in Org).
+   * @param content - Retrieved Org file content.
    * @returns Info including the temp file URI.
    */
   public async createOrUpdate(
@@ -70,19 +67,12 @@ export class ComparisonTempFileService {
     const safeOrg = this.sanitizeForFileName(orgAlias).toUpperCase();
     // SALEXT-0004 - start
     // Tab/diff label: MyClass.LOCAL_x_UAT.cls (Org snapshot; blue decoration).
-    // SALEXT-0005 - start
-    // Distinct name when missing so Diff never reuses a prior non-empty buffer URI.
-    const missingMarker = content.length === 0 ? '.MISSING' : '';
-    const fileName = `${parsed.name}.LOCAL_x_${safeOrg}${missingMarker}${parsed.ext}`;
-    // SALEXT-0005 - end
+    const fileName = `${parsed.name}.LOCAL_x_${safeOrg}${parsed.ext}`;
     // SALEXT-0004 - end
     const filePath = path.join(this.tempRoot, fileName);
     await fs.writeFile(filePath, content, 'utf8');
 
     const uri = vscode.Uri.file(filePath);
-    // SALEXT-0005 - start
-    await this.syncOpenDocumentContent(uri, content);
-    // SALEXT-0005 - end
     const info: ComparisonTempFileInfo = {
       uri,
       orgAlias,
@@ -92,81 +82,6 @@ export class ComparisonTempFileService {
     this._onDidChangeFileDecorations.fire(uri);
     return info;
   }
-
-  // SALEXT-0005 - start
-  /**
-   * Closes any open Diff tabs that already use this temp snapshot URI so the
-   * next `vscode.diff` opens a fresh editor with the content just written.
-   *
-   * @param tempUri - Comparison temp file URI on the Org side.
-   * @returns Promise that resolves when matching tabs are closed.
-   */
-  public async closeExistingDiffTabs(tempUri: vscode.Uri): Promise<void> {
-    const targetPath = tempUri.fsPath;
-    const tabsToClose: vscode.Tab[] = [];
-    for (const group of vscode.window.tabGroups.all) {
-      for (const tab of group.tabs) {
-        if (!(tab.input instanceof vscode.TabInputTextDiff)) {
-          continue;
-        }
-        const originalPath = tab.input.original.fsPath;
-        const modifiedPath = tab.input.modified.fsPath;
-        if (originalPath === targetPath || modifiedPath === targetPath) {
-          tabsToClose.push(tab);
-        }
-      }
-    }
-    if (tabsToClose.length > 0) {
-      await vscode.window.tabGroups.close(tabsToClose, true);
-    }
-  }
-
-  /**
-   * Ensures the in-memory text document for a temp URI matches the given content.
-   *
-   * @param uri - Temp file URI.
-   * @param content - Expected file content (may be empty).
-   * @returns Promise that resolves when the editor model matches `content`.
-   */
-  public async syncOpenDocumentContent(
-    uri: vscode.Uri,
-    content: string
-  ): Promise<void> {
-    const openDoc = vscode.workspace.textDocuments.find(
-      (doc) => doc.uri.fsPath === uri.fsPath
-    );
-    if (!openDoc) {
-      return;
-    }
-    if (openDoc.getText() === content) {
-      return;
-    }
-    await this.replaceDocumentContent(openDoc, content);
-  }
-
-  /**
-   * Replaces the full text of an open document and saves it to disk.
-   *
-   * @param document - Open text document to update.
-   * @param content - New full content (may be empty).
-   * @returns Promise that resolves when the edit is applied and saved.
-   */
-  private async replaceDocumentContent(
-    document: vscode.TextDocument,
-    content: string
-  ): Promise<void> {
-    const edit = new vscode.WorkspaceEdit();
-    const fullRange = new vscode.Range(
-      document.positionAt(0),
-      document.positionAt(document.getText().length)
-    );
-    edit.replace(document.uri, fullRange, content);
-    await vscode.workspace.applyEdit(edit);
-    if (document.isDirty) {
-      await document.save();
-    }
-  }
-  // SALEXT-0005 - end
 
   /**
    * Returns whether a URI is a tracked comparison-Org temp snapshot.
